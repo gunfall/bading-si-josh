@@ -1,26 +1,3 @@
-/* =====================================================================
-   ARELLANO MIDNIGHT — a horror visual novel
-   ---------------------------------------------------------------------
-   This file is organized top to bottom as:
-     1. CUSTOM ASSETS   -> paste your own image / video / sound links
-     2. SCENES          -> the whole branching story lives here
-     3. ENGINE          -> rendering, transitions, save/load (rarely
-                            needs editing — skip to section 1 or 2 if
-                            you just want to reskin the story)
-   ===================================================================== */
-
-
-/* =====================================================================
-   1. CUSTOM ASSETS
-   CHANGE YOUR LINKS BELOW
-   -----------------------------------------------------------------
-   Paste direct image links (jpg/png/webp) and video/audio links here.
-   Every scene below references these variables instead of a hard-coded
-   URL, so changing a picture here updates it everywhere it's used.
-   If a value is left as an empty string "", the engine will just show
-   a dark placeholder instead of breaking.
-   ===================================================================== */
-
 const IMAGES = {
 
     backgrounds: {
@@ -54,21 +31,6 @@ const SOUNDS = {
 };
 
 
-/* =====================================================================
-   2. SCENES
-   -----------------------------------------------------------------
-   Every key in this object is a "scene id". A scene can be:
-     - a normal story beat  -> has background / speaker / text / choices
-     - a video beat         -> has isVideo:true + video + next
-     - an ending             -> has isEnding:true + endingText + win
-
-   character slots: "left" | "center" | "right"  (see IMAGES.characters)
-   set `flash:true` and/or `sting:true` on a scene for a jumpscare beat.
-
-   TO ADD A NEW SCENE: copy any block below, give it a unique key, and
-   point some choice's "next" at that key.
-   ===================================================================== */
-
 const scenes = {
 
     // ---------------------------------------------------------------
@@ -84,9 +46,7 @@ const scenes = {
         ]
     },
 
-    // ---------------------------------------------------------------
-    // SCENE 2 — TWO GUARDS
-    // ---------------------------------------------------------------
+
     guardChoice: {
         background: IMAGES.backgrounds.universityGate,
         characters: [
@@ -101,9 +61,7 @@ const scenes = {
         ]
     },
 
-    // ---------------------------------------------------------------
-    // SCENE 3 — LIGHT IN THE CLASSROOM
-    // ---------------------------------------------------------------
+    
     hallwayLight: {
         background: IMAGES.backgrounds.hallway, // CHANGE THIS IMAGE: IMAGES.backgrounds.hallway
         characters: [
@@ -124,9 +82,7 @@ const scenes = {
         next: "end_shocked"
     },
 
-    // ---------------------------------------------------------------
-    // SCENE 4 — MONSTER ATTACK
-    // ---------------------------------------------------------------
+    
     monsterAttack: {
         background: IMAGES.backgrounds.hallway,
         characters: [
@@ -156,9 +112,7 @@ const scenes = {
         ]
     },
 
-    // ---------------------------------------------------------------
-    // SCENE 5 — GOTH WOMAN
-    // ---------------------------------------------------------------
+    
     gothWoman: {
         background: IMAGES.backgrounds.hallway,
         characters: [
@@ -173,9 +127,7 @@ const scenes = {
         ]
     },
 
-    // ---------------------------------------------------------------
-    // SCENE 6 — CRYING STUDENT
-    // ---------------------------------------------------------------
+    
     cryingStudent: {
         background: IMAGES.backgrounds.hallway,
         characters: [
@@ -190,9 +142,7 @@ const scenes = {
         ]
     },
 
-    // ---------------------------------------------------------------
-    // SCENE 7 — GO HOME
-    // ---------------------------------------------------------------
+
     goHomeScene: {
         background: IMAGES.backgrounds.hallway,
         characters: [
@@ -220,9 +170,7 @@ const scenes = {
         ]
     },
 
-    // ---------------------------------------------------------------
-    // SCENE 9 — ACCEPT YOUR FATE
-    // ---------------------------------------------------------------
+    
     angelDemon: {
         background: IMAGES.backgrounds.room, // CHANGE THIS IMAGE: IMAGES.backgrounds.room
         characters: [
@@ -237,10 +185,7 @@ const scenes = {
         ]
     },
 
-    /* -----------------------------------------------------------
-       ENDINGS
-       Add isEnding:true, a banner, endingText, and win:true/false.
-       ----------------------------------------------------------- */
+    
 
     end_goHomeEarly: {
         isEnding: true,
@@ -322,11 +267,7 @@ const scenes = {
 };
 
 
-/* =====================================================================
-   3. ENGINE
-   You shouldn't need to edit below this line unless you're changing
-   how the game behaves (not what happens in the story).
-   ===================================================================== */
+
 
 const SAVE_KEY = "arellanoMidnight_save";
 
