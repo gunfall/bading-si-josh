@@ -34,7 +34,7 @@ const IMAGES = {
     characters: {
         player:    "",   // PASTE_PLAYER_IMAGE_LINK_HERE (optional — not shown by default, first-person style)
         dutae:     "",   // PASTE_DUTAE_IMAGE_LINK_HERE
-        bongbong:  "",   // PASTE_BONGBONG_SAHUR_IMAGE_LINK_HERE
+        bongbong:  "https://raw.githubusercontent.com/gunfall/bading-si-josh/refs/heads/main/3477-removebg-preview.png",   // PASTE_BONGBONG_SAHUR_IMAGE_LINK_HERE
         monster:   "",   // PASTE_MONSTER_IMAGE_LINK_HERE
         gothWoman: "",   // PASTE_GOTH_WOMAN_IMAGE_LINK_HERE
         student:   "",   // PASTE_STUDENT_IMAGE_LINK_HERE
