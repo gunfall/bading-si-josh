@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Arellano Midnight — A Horror Visual Novel</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ============================================= -->
+  <!-- TITLE / LOAD SCREEN                            -->
+  <!-- ============================================= -->
+  <div id="titleScreen" class="screen">
+    <div class="title-vignette"></div>
+    <h1 class="game-title">ARELLANO<span class="title-sub">midnight</span></h1>
+    <p class="title-tagline">a horror visual novel</p>
+    <div class="title-buttons">
+      <button id="btnNewGame" class="vn-btn">New Game</button>
+      <button id="btnContinue" class="vn-btn" style="display:none;">Continue</button>
+    </div>
+    <p class="title-hint">Tap a choice to move the story forward.</p>
+  </div>
+
+  <!-- ============================================= -->
+  <!-- MAIN GAME SCREEN                               -->
+  <!-- ============================================= -->
+  <div id="gameScreen" class="screen" style="display:none;">
+
+    <!-- Background layers (two, for cross-fade) -->
+    <div id="bgLayerA" class="bg-layer"></div>
+    <div id="bgLayerB" class="bg-layer"></div>
+    <div class="bg-overlay"></div>
+    <div class="bg-vignette"></div>
+    <div id="flashLayer" class="flash-layer"></div>
+
+    <!-- Character sprite slots -->
+    <div class="character-stage">
+      <img id="charLeft" class="character left" src="" alt="" style="display:none;">
+      <img id="charCenter" class="character center" src="" alt="" style="display:none;">
+      <img id="charRight" class="character right" src="" alt="" style="display:none;">
+    </div>
+
+    <!-- Video overlay for jumpscare / found-footage scenes -->
+    <div id="videoOverlay" class="video-overlay" style="display:none;">
+      <video id="scaryVideo" playsinline></video>
+    </div>
+
+    <!-- Top bar: mute + restart -->
+    <div class="top-bar">
+      <button id="btnMute" class="icon-btn" title="Mute / Unmute">🔊</button>
+      <button id="btnRestart" class="icon-btn" title="Restart Story">⟲</button>
+    </div>
+
+    <!-- Dialogue / narration box -->
+    <div id="storyBox" class="story-box">
+      <div id="storyLabel" class="story-label">NARRATOR</div>
+      <p id="storyText" class="story-text"></p>
+    </div>
+
+    <!-- Choices -->
+    <div id="choiceBox" class="choice-box"></div>
+
+  </div>
+
+  <!-- ============================================= -->
+  <!-- ENDING SCREEN                                  -->
+  <!-- ============================================= -->
+  <div id="endingScreen" class="screen" style="display:none;">
+    <div class="ending-vignette"></div>
+    <h2 id="endingBanner" class="ending-banner">THE END</h2>
+    <p id="endingText" class="ending-text"></p>
+    <button id="btnPlayAgain" class="vn-btn">Play Again</button>
+  </div>
+
+  <audio id="audioMusic" loop></audio>
+  <audio id="audioClick"></audio>
+  <audio id="audioHorror"></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
