@@ -25,7 +25,7 @@ const IMAGES = {
 
     backgrounds: {
         universityGate: "",   // CHANGE THIS IMAGE: used in Scene 1 (start) and the final escape endings
-        hallway:        "",   // CHANGE THIS IMAGE: used for Scenes 3, 4, 5, 6 (hallway walking scenes)
+        hallway:        "https://raw.githubusercontent.com/gunfall/bading-si-josh/refs/heads/main/Screenshot_2026-08-13-18-02-28-766_com.facebook.katana-edit.jpg",   // CHANGE THIS IMAGE: used for Scenes 3, 4, 5, 6 (hallway walking scenes)
         classroom:      "",   // CHANGE THIS IMAGE: used right before the scary video plays
         room:           "",   // CHANGE THIS IMAGE: used when the player follows the goth woman
         ending:         ""    // CHANGE THIS IMAGE: generic dark background shown behind most endings
@@ -33,9 +33,9 @@ const IMAGES = {
 
     characters: {
         player:    "",   // PASTE_PLAYER_IMAGE_LINK_HERE (optional — not shown by default, first-person style)
-        dutae:     "",   // PASTE_DUTAE_IMAGE_LINK_HERE
+        dutae:     "https://raw.githubusercontent.com/gunfall/bading-si-josh/refs/heads/main/3483-removebg-preview.png",   // PASTE_DUTAE_IMAGE_LINK_HERE
         bongbong:  "https://raw.githubusercontent.com/gunfall/bading-si-josh/refs/heads/main/3477-removebg-preview.png",   // PASTE_BONGBONG_SAHUR_IMAGE_LINK_HERE
-        monster:   "",   // PASTE_MONSTER_IMAGE_LINK_HERE
+        monster:   "https://raw.githubusercontent.com/gunfall/bading-si-josh/refs/heads/main/3483-removebg-preview.png",   // PASTE_MONSTER_IMAGE_LINK_HERE
         gothWoman: "",   // PASTE_GOTH_WOMAN_IMAGE_LINK_HERE
         student:   "",   // PASTE_STUDENT_IMAGE_LINK_HERE
         angel:     "",   // PASTE_ANGEL_IMAGE_LINK_HERE
