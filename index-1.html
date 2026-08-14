@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Arellano Midnight — A Horror Visual Novel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Creepster&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+<style>
+/* =====================================================
+   HORROR VISUAL NOVEL THEME TOKENS
+   ===================================================== */
+:root {
+  --bg-ink:        #060405;
+  --blood-dark:    #4a050d;
+  --blood-red:     #9e1122;
+  --blood-glow:    #ff2a3f;
+  --bone-white:    #ffffff;
+  --bone-dim:      #d1c7bc;
+  --amber-gold:    #df9a3c;
+  
+  --font-title:   'Creepster', cursive;
+  --font-display: 'Cinzel', serif;
+  --font-ui:      'Inter', system-ui, -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; 
+  padding: 0; 
+  width: 100%; 
+  height: 100%;
+  background: var(--bg-ink);
+  color: var(--bone-white);
+  font-family: var(--font-ui);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Screen Wrapper */
+.screen {
+  position: fixed; 
+  inset: 0;
+  width: 100%; 
+  height: 100%;
+  overflow: hidden;
+}
+
+/* CRT / VHS Scanlines */
+body::after {
+  content: "";
+  position: fixed; 
+  inset: 0;
+  pointer-events: none;
+  z-index: 900;
+  opacity: 0.12;
+  background: 
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.04));
+  background-size: 100% 3px, 6px 100%;
+}
+
+/* =====================================================
+   BLOOD EDGES & LOW HEARTS PULSE
+   ===================================================== */
+.blood-edges {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 850;
+  box-shadow: inset 0 0 90px rgba(158, 17, 34, 0.45), inset 0 0 180px rgba(74, 5, 13, 0.75);
+  border: 2px solid rgba(158, 17, 34, 0.35);
+}
+
+.low-hearts-pulse {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 860;
+  background: radial-gradient(circle at 50% 50%, transparent 35%, rgba(255, 42, 63, 0.4) 100%);
+  opacity: 0;
+  display: none;
+}
+
+.low-hearts-pulse.active {
+  display: block;
+  animation: heartVignettePulse 1.1s infinite ease-in-out;
+}
+
+@keyframes heartVignettePulse {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.02); }
+}
+
+/* =====================================================
+   EMBERS & AMBIENT DECORATIONS
+   ===================================================== */
+.embers-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 5;
+}
+
+.ember {
+  position: absolute;
+  bottom: -12px;
+  background: rgba(255, 65, 40, 0.85);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(255, 65, 40, 0.9);
+  animation: floatEmber linear infinite;
+}
+
+@keyframes floatEmber {
+  0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.9; }
+  100% { transform: translateY(-108vh) scale(0.2) rotate(180deg); opacity: 0; }
+}
+
+/* =====================================================
+   DOOR OVERLAY ANIMATION
+   ===================================================== */
+.door-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.door-overlay.active {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.door {
+  width: 50%;
+  height: 100%;
+  background: #0f0709;
+  border: 4px solid #3a1015;
+  box-shadow: inset 0 0 60px #000;
+  transition: transform 0.85s cubic-bezier(0.7, 0, 0.3, 1);
+}
+
+.door-left { transform-origin: left center; }
+.door-right { transform-origin: right center; }
+
+.door-overlay.open .door-left { transform: perspective(1000px) rotateY(-85deg); }
+.door-overlay.open .door-right { transform: perspective(1000px) rotateY(85deg); }
+
+/* =====================================================
+   BLOOD-SMEAR BUTTON STYLING
+   ===================================================== */
+.vn-btn {
+  font-family: var(--font-display);
+  font-size: clamp(0.85rem, 2.5vw, 1rem);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--bone-white);
+  background: linear-gradient(135deg, #2b080d 0%, #120406 100%);
+  border: 1px solid rgba(255, 42, 63, 0.5);
+  border-radius: 4px;
+  padding: 16px 20px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  min-height: 52px;
+  box-shadow: inset 0 0 10px rgba(158, 17, 34, 0.6), 0 4px 15px rgba(0, 0, 0, 0.8);
+}
+
+.vn-btn::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(158, 17, 34, 0.45) 0%, transparent 65%);
+  opacity: 0.6;
+  pointer-events: none;
+  transform: rotate(-12deg);
+  transition: opacity 0.3s ease;
+}
+
+.vn-btn:hover::before {
+  opacity: 1;
+  background: radial-gradient(circle, rgba(255, 42, 63, 0.7) 0%, transparent 70%);
+}
+
+.vn-btn:hover {
+  border-color: var(--blood-glow);
+  box-shadow: 0 0 22px rgba(255, 42, 63, 0.65), inset 0 0 15px rgba(255, 42, 63, 0.4);
+  transform: translateY(-2px);
+}
+
+.vn-btn:active { transform: translateY(1px); }
+
+/* =====================================================
+   TITLE SCREEN
+   ===================================================== */
+#titleScreen {
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center;
+  background: radial-gradient(circle at 50% 40%, #20080c 0%, #060405 80%);
+  text-align: center;
+  padding: 24px;
+}
+
+.title-vignette {
+  position: absolute; 
+  inset: 0;
+  box-shadow: inset 0 0 20vw 6vw #000;
+  pointer-events: none;
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 10;
+}
+
+.game-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  font-size: clamp(2.4rem, 8.5vw, 4.8rem);
+  color: var(--bone-white);
+  text-shadow: 0 0 15px rgba(255, 42, 63, 0.6), 0 0 40px rgba(158, 17, 34, 0.4);
+  margin: 0;
+  animation: atmosphericFlicker 6s infinite;
+}
+
+.title-sub {
+  display: block;
+  font-family: var(--font-title);
+  letter-spacing: 0.18em;
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  color: var(--blood-glow);
+  margin-top: 0.1em;
+  text-shadow: 0 0 10px rgba(255, 42, 63, 0.8);
+}
+
+.title-tagline {
+  color: var(--bone-dim);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-size: clamp(0.7rem, 2vw, 0.85rem);
+  margin: 1.2em 0 2.5em;
+}
+
+.title-buttons {
+  display: flex; 
+  flex-direction: column; 
+  gap: 14px;
+  width: min(88vw, 320px);
+  z-index: 10;
+}
+
+.title-hint {
+  position: absolute; 
+  bottom: 24px;
+  font-size: 0.8rem; 
+  color: var(--bone-dim);
+  opacity: 0.65;
+  letter-spacing: 0.05em;
+  z-index: 10;
+}
+
+@keyframes atmosphericFlicker {
+  0%, 19%, 21%, 23%, 80%, 100% { opacity: 1; filter: drop-shadow(0 0 2px var(--blood-glow)); }
+  20%, 22%, 79% { opacity: 0.75; filter: none; }
+}
+
+/* =====================================================
+   GAME SCREEN — STAGE & SPRITES
+   ===================================================== */
+#gameScreen { background: var(--bg-ink); }
+
+.bg-layer {
+  position: absolute; 
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: opacity 1.2s ease;
+  opacity: 0;
+  z-index: 1;
+}
+
+.bg-layer.visible { opacity: 1; z-index: 2; }
+
+.bg-overlay {
+  position: absolute; 
+  inset: 0; 
+  z-index: 3;
+  background: rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.flash-layer {
+  position: absolute; 
+  inset: 0; 
+  z-index: 100;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.flash-layer.flash {
+  animation: flashTrigger 0.35s ease-out;
+}
+
+@keyframes flashTrigger {
+  0% { opacity: 0.95; }
+  100% { opacity: 0; }
+}
+
+/* Sprites */
+.character-stage {
+  position: absolute; 
+  inset: 0; 
+  z-index: 10;
+  pointer-events: none;
+}
+
+.character {
+  position: absolute;
+  bottom: -2vh;
+  height: min(88vh, 800px);
+  max-width: 52vw;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 25px rgba(0, 0, 0, 0.85));
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.character.show { opacity: 1; }
+
+.character.left { left: -2%; transform: translateX(-20px); }
+.character.left.show { transform: translateX(0); }
+
+.character.center { left: 50%; transform: translate(-50%, 20px); }
+.character.center.show { transform: translate(-50%, 0); }
+
+.character.right { right: -2%; transform: translateX(20px); }
+.character.right.show { transform: translateX(0); }
+
+@keyframes entityPeriodicWalk {
+  0% { opacity: 0; transform: translateX(38vw) scale(0.92); }
+  3% { opacity: 0.95; }
+  25% { transform: translateX(-38vw) scale(0.92); opacity: 0.95; }
+  28.57% { opacity: 0; transform: translateX(-48vw) scale(0.92); }
+  100% { opacity: 0; transform: translateX(-48vw) scale(0.92); }
+}
+
+.character.walking {
+  position: absolute;
+  left: 50% !important;
+  right: auto !important;
+  bottom: 8vh;
+  height: min(75vh, 650px);
+  z-index: 5;
+  pointer-events: none;
+  animation: entityPeriodicWalk 7s infinite linear;
+}
+
+/* =====================================================
+   TOP CONTROLS
+   ===================================================== */
+.top-bar {
+  position: absolute; 
+  top: max(12px, env(safe-area-inset-top));
+  right: 14px; 
+  z-index: 80;
+  display: flex; 
+  align-items: center;
+  gap: 12px;
+}
+
+.heart-display {
+  font-size: 1.2rem;
+  letter-spacing: 4px;
+  display: flex;
+  align-items: center;
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 42, 63, 0.5);
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 12px rgba(255, 42, 63, 0.4);
+  text-shadow: 0 0 8px rgba(255, 42, 63, 0.8);
+}
+
+.icon-btn {
+  width: 42px; 
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--bone-white);
+  font-size: 1.1rem;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  border-color: var(--blood-glow);
+  background: rgba(36, 14, 18, 0.85);
+}
+
+/* =====================================================
+   BOTTOM UI CONTAINER & CHOICES
+   ===================================================== */
+.ui-bottom-wrapper {
+  position: absolute;
+  left: 20px;
+  bottom: max(28px, env(safe-area-inset-bottom));
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 88vw;
+  pointer-events: none;
+}
+
+.choice-box {
+  display: flex; 
+  flex-direction: column; 
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.choice-box:not(:empty) { pointer-events: auto; }
+
+@keyframes choicePopIn {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.choice-btn {
+  font-family: var(--font-ui);
+  font-size: clamp(1.1rem, 3.8vw, 1.7rem);
+  font-weight: 800;
+  text-align: left;
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(30, 8, 12, 0.9) 0%, rgba(10, 3, 5, 0.9) 100%);
+  border: 1px solid rgba(255, 42, 63, 0.5);
+  border-radius: 8px;
+  padding: 12px 22px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.95);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), inset 0 0 10px rgba(158, 17, 34, 0.3);
+  opacity: 0;
+  animation: choicePopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  text-transform: lowercase;
+  position: relative;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.choice-btn::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(circle, rgba(255, 42, 63, 0.35) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.choice-btn:hover::before { opacity: 1; }
+
+.choice-btn:hover {
+  background: rgba(255, 42, 63, 0.85);
+  border-color: #ffffff;
+  transform: translateX(6px);
+  box-shadow: 0 0 20px rgba(255, 42, 63, 0.7);
+}
+
+.story-box {
+  position: relative;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  width: 100%;
+  pointer-events: auto;
+}
+
+.story-text {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: clamp(1.3rem, 4.2vw, 2rem);
+  font-weight: 800;
+  line-height: 1.25;
+  color: #ffffff;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.95), 0 0 12px rgba(0, 0, 0, 0.8);
+}
+
+.story-next-indicator {
+  position: absolute;
+  right: -25px;
+  bottom: 4px;
+  font-size: 1rem;
+  color: var(--bone-white);
+  animation: bounce 1s infinite alternate;
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); opacity: 0.5; }
+  to { transform: translateY(4px); opacity: 1; }
+}
+
+/* Video Overlay */
+.video-overlay {
+  position: absolute; 
+  inset: 0; 
+  z-index: 200;
+  background: #000;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  cursor: pointer;
+}
+
+.video-hint {
+  position: absolute;
+  bottom: 20px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  z-index: 201;
+  pointer-events: none;
+}
+
+#scaryVideo {
+  width: 100%; 
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+/* =====================================================
+   BLOODIER ENDING SCREEN & LIKE/SHARE SECTION
+   ===================================================== */
+#endingScreen {
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center;
+  background: radial-gradient(circle at 50% 50%, #3a080d 0%, #080203 85%);
+  text-align: center;
+  padding: 28px;
+}
+
+.ending-banner {
+  font-family: var(--font-title);
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  font-size: clamp(2.5rem, 9vw, 4.2rem);
+  color: #ff1a30;
+  text-shadow: 0 0 15px rgba(255, 26, 48, 0.9), 0 0 35px rgba(158, 17, 34, 0.8);
+  margin: 0 0 0.4em;
+}
+
+.ending-banner.win {
+  color: var(--amber-gold);
+  text-shadow: 0 0 25px rgba(223, 154, 60, 0.8);
+}
+
+.ending-text {
+  max-width: 620px;
+  color: var(--bone-dim);
+  font-size: clamp(1.05rem, 3vw, 1.25rem);
+  line-height: 1.65;
+  margin: 0 0 1.8em;
+  text-shadow: 0 2px 8px #000;
+}
+
+/* Like & Share Prompts */
+.like-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.like-question {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 0 12px rgba(255, 42, 63, 0.6);
+}
+
+.like-btn-group {
+  display: flex;
+  gap: 16px;
+}
+
+.btn-yes {
+  background: linear-gradient(135deg, #10591b 0%, #051a08 100%) !important;
+  border-color: #28a745 !important;
+}
+
+.btn-yes:hover {
+  box-shadow: 0 0 22px rgba(40, 167, 69, 0.8) !important;
+}
+
+.share-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 15px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.share-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+</style>
+</head>
+<body>
+
+  <!-- Ambient Decorations & Blood Edges -->
+  <div class="blood-edges"></div>
+  <div id="lowHeartsPulse" class="low-hearts-pulse"></div>
+
+  <!-- Animated Door Overlay -->
+  <div id="doorOverlay" class="door-overlay">
+    <div class="door door-left"></div>
+    <div class="door door-right"></div>
+  </div>
+
+  <!-- TITLE SCREEN -->
+  <div id="titleScreen" class="screen">
+    <div class="title-vignette"></div>
+    <div id="embersContainer" class="embers-container"></div>
+    
+    <div class="logo-container">
+      <h1 class="game-title">ARELLANO<span class="title-sub">midnight</span></h1>
+      <p class="title-tagline">a horror visual novel</p>
+    </div>
+
+    <div class="title-buttons">
+      <button id="btnNewGame" class="vn-btn">New Game</button>
+      <button id="btnContinue" class="vn-btn" style="display:none;">Continue</button>
+    </div>
+    <p class="title-hint">Wrong choices lose hearts. Retry until hearts run out.</p>
+  </div>
+
+  <!-- MAIN GAME SCREEN -->
+  <div id="gameScreen" class="screen" style="display:none;">
+
+    <div id="bgLayerA" class="bg-layer"></div>
+    <div id="bgLayerB" class="bg-layer"></div>
+    <div class="bg-overlay"></div>
+    <div id="flashLayer" class="flash-layer"></div>
+
+    <div class="character-stage">
+      <img id="charLeft" class="character left" src="" alt="" style="display:none;">
+      <img id="charCenter" class="character center" src="" alt="" style="display:none;">
+      <img id="charRight" class="character right" src="" alt="" style="display:none;">
+    </div>
+
+    <div id="videoOverlay" class="video-overlay" style="display:none;">
+      <video id="scaryVideo" playsinline></video>
+      <div class="video-hint">Tap screen to skip video</div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div id="heartDisplay" class="heart-display">❤️❤️❤️</div>
+      <button id="btnMute" class="icon-btn" title="Mute / Unmute">🔊</button>
+      <button id="btnRestart" class="icon-btn" title="Restart Story">⟲</button>
+    </div>
+
+    <!-- Bottom UI Wrapper -->
+    <div class="ui-bottom-wrapper">
+      <div id="choiceBox" class="choice-box"></div>
+      <div id="storyBox" class="story-box">
+        <p id="storyText" class="story-text"></p>
+        <div id="storyIndicator" class="story-next-indicator" style="display:none;">▼</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ENDING SCREEN -->
+  <div id="endingScreen" class="screen" style="display:none;">
+    <h2 id="endingBanner" class="ending-banner">THE END</h2>
+    <p id="endingText" class="ending-text"></p>
+    
+    <!-- WRONG CHOICE BUTTON -->
+    <button id="btnPlayAgain" class="vn-btn">Retry Question</button>
+
+    <!-- WIN ENDING "DO YOU LIKE ME?" SECTION -->
+    <div id="likeSection" class="like-container" style="display:none;">
+      <p class="like-question">Do you like me?</p>
+      <div class="like-btn-group">
+        <button id="btnLikeYes" class="vn-btn btn-yes">YES ❤️</button>
+        <button id="btnLikeNo" class="vn-btn">NO 💔</button>
+      </div>
+    </div>
+
+    <!-- SHARE OPTIONS (APPEARS IF YES IS CLICKED) -->
+    <div id="shareSection" class="share-container" style="display:none;">
+      <p style="color: var(--amber-gold); font-size: 0.95rem; margin:0; letter-spacing:0.08em; text-transform:uppercase;">Share with your friends!</p>
+      <div class="share-options">
+        <button id="btnShareNative" class="vn-btn" style="font-size:0.85rem; padding:12px 16px;">📲 Share / Messenger</button>
+        <button id="btnShareFB" class="vn-btn" style="font-size:0.85rem; padding:12px 16px;">Facebook</button>
+        <button id="btnCopyLink" class="vn-btn" style="font-size:0.85rem; padding:12px 16px;">📋 Copy Link</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HTML Audio Tags -->
+  <audio id="audioMusic" loop></audio>
+  <audio id="audioClick"></audio>
+  <audio id="audioHorror"></audio>
+
+  <script>
+  const IMAGES = {
+      backgrounds: {
+          universityGate: "https://raw.githubusercontent.com/gunfall/bading-si-josh/refs/heads/main/Screenshot_2026-08-13-18-01-31-646_com.google.android.apps.maps-edit.jpg",
+          hallway:        "https://raw.githubusercontent.com/gunfall/bading-si-josh/refs/heads/main/Screenshot_2026-08-13-18-02-28-766_com.facebook.katana-edit.jpg",
+          classroom:      "https://raw.githubusercontent.com/gunfall/bading-si-josh/refs/heads/main/Screenshot_2026-08-13-18-02-28-766_com.facebook.katana-edit.jpg",
+          room:           "https://raw.githubusercontent.com/gunfall/bading-si-josh/refs/heads/main/Screenshot_2026-08-13-18-02-28-766_com.facebook.katana-edit.jpg",
+          ending:         "https://raw.githubusercontent.com/gunfall/bading-si-josh/refs/heads/main/Screenshot_2026-08-13-18-01-31-646_com.google.android.apps.maps-edit.jpg"
+      },
+
+      characters: {
+          player:    "",
+          dutae:     "https://raw.githubusercontent.com/gunfall/bading-si-josh/refs/heads/main/3483-removebg-preview.png",
+          bongbong:  "https://raw.githubusercontent.com/gunfall/bading-si-josh/refs/heads/main/3477-removebg-preview.png",
+          monster:   "https://raw.githubusercontent.com/gunfall/bading-si-josh/refs/heads/main/Picsart_26-08-14_21-51-39-551.png",
+          entity:    "https://raw.githubusercontent.com/gunfall/bading-si-josh/refs/heads/main/Picsart_26-08-14_21-51-39-551.png",
+          gothWoman: "",
+          student:   "",
+          angel:     "",
+          demon:     ""
+      },
+
+      videos: {
+          scaryVideo: "received_1062710772874689.mp4"
+      }
+  };
+
+  const SOUNDS = {
+      backgroundMusic: "https://raw.githubusercontent.com/gunfall/bading-si-josh/refs/heads/main/ssstik.io_1786715394308.mp3",
+      click:            "",
+      horror:           "https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3"
+  };
+
+  const scenes = {
+      start: {
+          background: IMAGES.backgrounds.universityGate,
+          speaker: "Narrator",
+          text: "You found yourself at Arellano University gate at midnight. What will you do?",
+          choices: [
+              { text: "Go and explore.", next: "guardChoice" },
+              { text: "Leave and go home.", next: "end_goHomeEarly" }
+          ]
+      },
+
+      guardChoice: {
+          background: IMAGES.backgrounds.universityGate,
+          characters: [
+              { img: IMAGES.characters.dutae, pos: "left" },
+              { img: IMAGES.characters.bongbong, pos: "right" }
+          ],
+          speaker: "Narrator",
+          text: "who will u pick? :",
+          choices: [
+              { text: "dutae", next: "end_dutaeSendHome" },
+              { text: "bongbong sahur", next: "hallwayLight" }
+          ]
+      },
+
+      hallwayLight: {
+          background: IMAGES.backgrounds.hallway,
+          characters: [
+              { img: IMAGES.characters.bongbong, pos: "left" },
+              { img: IMAGES.characters.entity, pos: "right", walking: true }
+          ],
+          speaker: "Narrator",
+          text: "While walking through the hallway with Bongbong Sahur, a mysterious walking entity paces in the distance. You notice a light coming from one classroom. What will you do?",
+          choices: [
+              { text: "Open the room door and go inside.", next: "classroomVideo" },
+              { text: "Ignore it and continue walking.", next: "monsterAttack" }
+          ]
+      },
+
+      classroomVideo: {
+          background: IMAGES.backgrounds.classroom,
+          isVideo: true,
+          video: IMAGES.videos.scaryVideo,
+          next: "end_shocked"
+      },
+
+      monsterAttack: {
+          background: IMAGES.backgrounds.hallway,
+          characters: [
+              { img: IMAGES.characters.bongbong, pos: "left" },
+              { img: IMAGES.characters.entity, pos: "right", walking: true }
+          ],
+          speaker: "Narrator",
+          text: "The dark entity lunges toward Bongbong Sahur! What will you do?",
+          flash: true,
+          sting: true,
+          choices: [
+              { text: "Run and leave Bongbong Sahur.", next: "gateDutae" },
+              { text: "Help Bongbong Sahur.", next: "gothWoman" }
+          ]
+      },
+
+      gateDutae: {
+          background: IMAGES.backgrounds.universityGate,
+          characters: [
+              { img: IMAGES.characters.dutae, pos: "center" }
+          ],
+          speaker: "Dutae",
+          text: "You run back to the gate, out of breath. Dutae looks at you. “What happened?” What will you say?",
+          choices: [
+              { text: "Tell him the monster ate Bongbong Sahur.", next: "end_dutaeMonster" },
+              { text: "Ignore him and run through the gate.", next: "win_escapedGate" }
+          ]
+      },
+
+      gothWoman: {
+          background: IMAGES.backgrounds.hallway,
+          characters: [
+              { img: IMAGES.characters.bongbong, pos: "left" },
+              { img: IMAGES.characters.gothWoman, pos: "right" }
+          ],
+          speaker: "Narrator",
+          text: "You punch the monster, and while it's distracted, Bongbong Sahur drives it off. Before you can catch your breath, a mysterious goth woman appears. “Come with me. Bongbong Sahur is dangerous.” Who will you choose?",
+          choices: [
+              { text: "Bongbong Sahur", next: "cryingStudent" },
+              { text: "Goth woman", next: "end_gothWoman" }
+          ]
+      },
+
+      cryingStudent: {
+          background: IMAGES.backgrounds.hallway,
+          characters: [
+              { img: IMAGES.characters.bongbong, pos: "left" },
+              { img: IMAGES.characters.student, pos: "right" }
+          ],
+          speaker: "Narrator",
+          text: "Further down the hallway you find a student crying, hair messy, his appearance strange. “Why are you crying?” What will you do?",
+          choices: [
+              { text: "Laugh at him.", next: "end_studentMonster" },
+              { text: "Ignore him and continue walking.", next: "goHomeScene" }
+          ]
+      },
+
+      goHomeScene: {
+          background: IMAGES.backgrounds.hallway,
+          characters: [
+              { img: IMAGES.characters.bongbong, pos: "center" }
+          ],
+          speaker: "Bongbong Sahur",
+          text: "“It's getting late. You should go home.” What will you do?",
+          choices: [
+              { text: "Agree.", next: "end_bongbongTwist" },
+              { text: "Don't agree.", next: "angryBongbong" }
+          ]
+      },
+
+      angryBongbong: {
+          background: IMAGES.backgrounds.hallway,
+          characters: [
+              { img: IMAGES.characters.bongbong, pos: "left" },
+              { img: IMAGES.characters.entity, pos: "right", walking: true }
+          ],
+          speaker: "Narrator",
+          text: "Bongbong Sahur's expression darkens as shadows approach. What will you do?",
+          flash: true,
+          choices: [
+              { text: "Run.", next: "end_couldntEscape" },
+              { text: "Just accept your fate.", next: "angelDemon" }
+          ]
+      },
+
+      angelDemon: {
+          background: IMAGES.backgrounds.room,
+          characters: [
+              { img: IMAGES.characters.angel, pos: "left" },
+              { img: IMAGES.characters.demon, pos: "right" }
+          ],
+          speaker: "Narrator",
+          text: "Light and shadow split apart before you — an angel and a demon. Who will you choose to help you?",
+          choices: [
+              { text: "Angel", next: "end_angelBetray" },
+              { text: "Demon", next: "win_demonEscape" }
+          ]
+      },
+
+      end_goHomeEarly: {
+          isEnding: true,
+          win: false,
+          banner: "WRONG CHOICE!",
+          endingText: "You turned around and left early. But you didn't solve the mystery of Arellano Midnight!"
+      },
+
+      end_dutaeSendHome: {
+          isEnding: true,
+          win: false,
+          banner: "WRONG CHOICE!",
+          endingText: "Dutae leads you back toward the gate and sends you home. Wrong path!"
+      },
+
+      end_shocked: {
+          isEnding: true,
+          win: false,
+          banner: "WRONG CHOICE!",
+          endingText: "You opened the classroom door and got terrified by what was inside!"
+      },
+
+      end_dutaeMonster: {
+          isEnding: true,
+          win: false,
+          banner: "WRONG CHOICE!",
+          endingText: "As the words leave your mouth, Dutae's face twists into something terrifying!"
+      },
+
+      win_escapedGate: {
+          isEnding: true,
+          win: true,
+          banner: "YOU WIN",
+          endingText: "You say nothing. You run straight through the gate and don't look back. You escaped through the gate and got home at dawn!"
+      },
+
+      end_gothWoman: {
+          isEnding: true,
+          win: false,
+          banner: "WRONG CHOICE!",
+          endingText: "You follow the goth woman into a quiet room. The light fades around you... Wrong choice!"
+      },
+
+      end_studentMonster: {
+          isEnding: true,
+          win: false,
+          banner: "WRONG CHOICE!",
+          endingText: "Your laughter cuts short as the student's expression twists into rage!"
+      },
+
+      end_bongbongTwist: {
+          isEnding: true,
+          win: false,
+          banner: "WRONG CHOICE!",
+          endingText: "You turn around to Bongbong Sahur — and that was your last mistake!"
+      },
+
+      end_couldntEscape: {
+          isEnding: true,
+          win: false,
+          banner: "WRONG CHOICE!",
+          endingText: "You run as fast as you can, but the dark entity catches up!"
+      },
+
+      end_angelBetray: {
+          isEnding: true,
+          win: false,
+          banner: "WRONG CHOICE!",
+          endingText: "The angel steps between you and Bongbong, but suddenly turns against you!"
+      },
+
+      win_demonEscape: {
+          isEnding: true,
+          win: true,
+          banner: "YOU ESCAPED",
+          subBanner: "GOOD ENDING",
+          endingText: "The demon meets Bongbong Sahur's gaze and clears you a path all the way to safety. You survived the night!"
+      }
+  };
+
+  const SAVE_KEY = "arellanoMidnight_save";
+
+  const el = {
+      titleScreen: document.getElementById("titleScreen"),
+      gameScreen: document.getElementById("gameScreen"),
+      endingScreen: document.getElementById("endingScreen"),
+      btnNewGame: document.getElementById("btnNewGame"),
+      btnContinue: document.getElementById("btnContinue"),
+      bgA: document.getElementById("bgLayerA"),
+      bgB: document.getElementById("bgLayerB"),
+      flashLayer: document.getElementById("flashLayer"),
+      charLeft: document.getElementById("charLeft"),
+      charCenter: document.getElementById("charCenter"),
+      charRight: document.getElementById("charRight"),
+      videoOverlay: document.getElementById("videoOverlay"),
+      scaryVideo: document.getElementById("scaryVideo"),
+      storyBox: document.getElementById("storyBox"),
+      storyText: document.getElementById("storyText"),
+      storyIndicator: document.getElementById("storyIndicator"),
+      choiceBox: document.getElementById("choiceBox"),
+      endingBanner: document.getElementById("endingBanner"),
+      endingText: document.getElementById("endingText"),
+      btnPlayAgain: document.getElementById("btnPlayAgain"),
+      likeSection: document.getElementById("likeSection"),
+      btnLikeYes: document.getElementById("btnLikeYes"),
+      btnLikeNo: document.getElementById("btnLikeNo"),
+      shareSection: document.getElementById("shareSection"),
+      btnShareNative: document.getElementById("btnShareNative"),
+      btnShareFB: document.getElementById("btnShareFB"),
+      btnCopyLink: document.getElementById("btnCopyLink"),
+      btnMute: document.getElementById("btnMute"),
+      btnRestart: document.getElementById("btnRestart"),
+      heartDisplay: document.getElementById("heartDisplay"),
+      lowHeartsPulse: document.getElementById("lowHeartsPulse"),
+      doorOverlay: document.getElementById("doorOverlay"),
+      embersContainer: document.getElementById("embersContainer"),
+      audioMusic: document.getElementById("audioMusic"),
+      audioClick: document.getElementById("audioClick"),
+      audioHorror: document.getElementById("audioHorror")
+  };
+
+  let currentSceneId = "start";
+  let lastQuestionSceneId = "start";
+  let isCurrentEndingWin = false;
+  let bgToggle = false;
+  let muted = false;
+  let typingTimer = null;
+  let isTyping = false;
+  let currentFullText = "";
+  let pendingChoices = [];
+  let entitySoundTimer = null;
+  let heartbeatLoopTimer = null;
+  let lives = 3;
+
+  /* =====================================================
+     WEB AUDIO SYNTHESIZER (SYNTH SFX & DRONE)
+     ===================================================== */
+  let audioCtx = null;
+  let droneOsc1 = null, droneOsc2 = null, droneGain = null;
+
+  function getAudioContext() {
+      if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+      }
+      return audioCtx;
+  }
+
+  function startAmbientDrone() {
+      try {
+          const ctx = getAudioContext();
+          if (droneGain) return;
+
+          droneOsc1 = ctx.createOscillator();
+          droneOsc2 = ctx.createOscillator();
+          droneGain = ctx.createGain();
+
+          droneOsc1.type = 'sawtooth';
+          droneOsc2.type = 'sine';
+
+          droneOsc1.frequency.setValueAtTime(50, ctx.currentTime);
+          droneOsc2.frequency.setValueAtTime(53.5, ctx.currentTime);
+
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(110, ctx.currentTime);
+
+          droneGain.gain.setValueAtTime(muted ? 0 : 0.12, ctx.currentTime);
+
+          droneOsc1.connect(filter);
+          droneOsc2.connect(filter);
+          filter.connect(droneGain);
+          droneGain.connect(ctx.destination);
+
+          droneOsc1.start();
+          droneOsc2.start();
+      } catch(e) {}
+  }
+
+  function synthHeartbeat() {
+      try {
+          const ctx = getAudioContext();
+          const now = ctx.currentTime;
+          
+          const osc1 = ctx.createOscillator();
+          const gain1 = ctx.createGain();
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(65, now);
+          osc1.frequency.exponentialRampToValueAtTime(28, now + 0.14);
+          gain1.gain.setValueAtTime(muted ? 0 : 0.45, now);
+          gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+          osc1.connect(gain1);
+          gain1.connect(ctx.destination);
+          osc1.start(now);
+          osc1.stop(now + 0.14);
+
+          const osc2 = ctx.createOscillator();
+          const gain2 = ctx.createGain();
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(55, now + 0.18);
+          osc2.frequency.exponentialRampToValueAtTime(22, now + 0.32);
+          gain2.gain.setValueAtTime(muted ? 0 : 0.35, now + 0.18);
+          gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+          osc2.connect(gain2);
+          gain2.connect(ctx.destination);
+          osc2.start(now + 0.18);
+          osc2.stop(now + 0.32);
+      } catch(e) {}
+  }
+
+  function synthDoorCreak() {
+      try {
+          const ctx = getAudioContext();
+          const now = ctx.currentTime;
+          const duration = 1.15;
+
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          const filter = ctx.createBiquadFilter();
+
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(170, now);
+          osc.frequency.linearRampToValueAtTime(310, now + 0.3);
+          osc.frequency.linearRampToValueAtTime(130, now + 0.75);
+          osc.frequency.exponentialRampToValueAtTime(75, now + duration);
+
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(380, now);
+          filter.Q.setValueAtTime(7, now);
+
+          gain.gain.setValueAtTime(0, now);
+          gain.gain.linearRampToValueAtTime(muted ? 0 : 0.22, now + 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + duration);
+      } catch(e) {}
+  }
+
+  function synthClick() {
+      try {
+          const ctx = getAudioContext();
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(750, now);
+          osc.frequency.exponentialRampToValueAtTime(180, now + 0.04);
+          gain.gain.setValueAtTime(muted ? 0 : 0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.04);
+      } catch(e) {}
+  }
+
+  /* ---------- Title Screen Embers Spawner ---------- */
+  function initEmbers() {
+      if (!el.embersContainer) return;
+      el.embersContainer.innerHTML = "";
+      for (let i = 0; i < 28; i++) {
+          const ember = document.createElement("div");
+          ember.className = "ember";
+          ember.style.left = Math.random() * 100 + "%";
+          ember.style.animationDuration = (3.5 + Math.random() * 4.5) + "s";
+          ember.style.animationDelay = (Math.random() * 4) + "s";
+          const sz = (2 + Math.random() * 4) + "px";
+          ember.style.width = sz;
+          ember.style.height = sz;
+          el.embersContainer.appendChild(ember);
+      }
+  }
+
+  /* ---------- Hearts & Low Life Pulse System ---------- */
+  function updateHeartsUI() {
+      let heartsStr = "";
+      for (let i = 0; i < 3; i++) {
+          heartsStr += (i < lives) ? "❤️" : "🖤";
+      }
+      el.heartDisplay.textContent = heartsStr;
+
+      if (heartbeatLoopTimer) {
+          clearInterval(heartbeatLoopTimer);
+          heartbeatLoopTimer = null;
+      }
+
+      if (lives === 1) {
+          el.lowHeartsPulse.classList.add("active");
+          synthHeartbeat();
+          heartbeatLoopTimer = setInterval(() => {
+              if (lives === 1) synthHeartbeat();
+          }, 1100);
+      } else {
+          el.lowHeartsPulse.classList.remove("active");
+      }
+  }
+
+  function resetHearts() {
+      lives = 3;
+      updateHeartsUI();
+  }
+
+  /* ---------- HTML Audio Player ---------- */
+  function safePlay(audioEl, src, { loop = false, volume = 1 } = {}) {
+      if (!src) return;
+      try {
+          if (audioEl.src !== src) audioEl.src = src;
+          audioEl.loop = loop;
+          audioEl.volume = muted ? 0 : volume;
+          audioEl.currentTime = 0;
+          audioEl.play().catch(() => {});
+      } catch (e) {}
+  }
+
+  function playClick() { synthClick(); }
+  function playHorrorSting() { safePlay(el.audioHorror, SOUNDS.horror, { volume: 0.95 }); }
+  function startMusic() {
+      safePlay(el.audioMusic, SOUNDS.backgroundMusic, { loop: true, volume: 0.35 });
+      startAmbientDrone();
+  }
+
+  el.btnMute.addEventListener("click", () => {
+      muted = !muted;
+      el.audioMusic.volume = muted ? 0 : 0.35;
+      if (droneGain) droneGain.gain.setValueAtTime(muted ? 0 : 0.12, getAudioContext().currentTime);
+      el.btnMute.textContent = muted ? "🔇" : "🔊";
+  });
+
+  /* ---------- Stage Engine ---------- */
+  function setBackground(url) {
+      const showing = bgToggle ? el.bgB : el.bgA;
+      const hiding = bgToggle ? el.bgA : el.bgB;
+      if (url) showing.style.backgroundImage = `url("${url}")`;
+      else showing.style.backgroundImage = "none";
+      showing.classList.add("visible");
+      hiding.classList.remove("visible");
+      bgToggle = !bgToggle;
+  }
+
+  function setCharacters(list) {
+      if (entitySoundTimer) {
+          clearInterval(entitySoundTimer);
+          entitySoundTimer = null;
+      }
+
+      const slots = { left: el.charLeft, center: el.charCenter, right: el.charRight };
+      Object.values(slots).forEach(node => {
+          node.classList.remove("show", "walking");
+          node.style.display = "none";
+          node.src = "";
+      });
+
+      let hasWalkingEntity = false;
+
+      (list || []).forEach(c => {
+          const node = slots[c.pos];
+          if (!node || !c.img) return;
+          node.src = c.img;
+          if (c.walking || c.img === IMAGES.characters.entity) {
+              node.classList.add("walking");
+              hasWalkingEntity = true;
+          }
+          node.style.display = "block";
+          requestAnimationFrame(() => node.classList.add("show"));
+      });
+
+      if (hasWalkingEntity) {
+          playHorrorSting();
+          entitySoundTimer = setInterval(() => {
+              playHorrorSting();
+          }, 7000);
+      }
+  }
+
+  function triggerFlash() {
+      el.flashLayer.classList.remove("flash");
+      void el.flashLayer.offsetWidth;
+      el.flashLayer.classList.add("flash");
+  }
+
+  /* ---------- Typewriter Engine ---------- */
+  function typeText(text, onComplete) {
+      if (typingTimer) {
+          clearInterval(typingTimer);
+          typingTimer = null;
+      }
+      el.storyText.textContent = "";
+      el.storyIndicator.style.display = "none";
+      isTyping = true;
+      currentFullText = text;
+      let i = 0;
+
+      if (!text) {
+          finishTyping(onComplete);
+          return;
+      }
+
+      typingTimer = setInterval(() => {
+          if (i < text.length) {
+              el.storyText.textContent += text.charAt(i);
+              i++;
+          } else {
+              finishTyping(onComplete);
+          }
+      }, 20);
+  }
+
+  function finishTyping(onComplete) {
+      if (typingTimer) {
+          clearInterval(typingTimer);
+          typingTimer = null;
+      }
+      el.storyText.textContent = currentFullText;
+      isTyping = false;
+      el.storyIndicator.style.display = "block";
+      if (onComplete) onComplete();
+  }
+
+  el.storyBox.addEventListener("click", () => {
+      if (isTyping) {
+          finishTyping(() => renderChoiceButtons(pendingChoices));
+      }
+  });
+
+  /* ---------- Door Transition Trigger ---------- */
+  function triggerDoorTransition(callback) {
+      synthDoorCreak();
+      if (el.doorOverlay) {
+          el.doorOverlay.classList.add("active");
+          requestAnimationFrame(() => {
+              el.doorOverlay.classList.add("open");
+          });
+          setTimeout(() => {
+              if (callback) callback();
+              setTimeout(() => {
+                  el.doorOverlay.classList.remove("open", "active");
+              }, 400);
+          }, 750);
+      } else {
+          if (callback) callback();
+      }
+  }
+
+  /* ---------- Choices Engine ---------- */
+  function renderChoiceButtons(choices) {
+      el.choiceBox.innerHTML = "";
+      (choices || []).forEach(choice => {
+          const btn = document.createElement("button");
+          btn.className = "choice-btn";
+          btn.textContent = choice.text;
+          btn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              playClick();
+              
+              if (choice.next === "classroomVideo") {
+                  triggerDoorTransition(() => goToScene(choice.next));
+              } else {
+                  goToScene(choice.next);
+              }
+          });
+          el.choiceBox.appendChild(btn);
+      });
+  }
+
+  /* ---------- Scene Rendering ---------- */
+  function renderScene(scene) {
+      setBackground(scene.background);
+      setCharacters(scene.characters);
+
+      el.storyBox.style.display = "block";
+      el.choiceBox.innerHTML = "";
+      pendingChoices = scene.choices || [];
+
+      typeText(scene.text || "", () => {
+          renderChoiceButtons(pendingChoices);
+      });
+
+      if (scene.flash) triggerFlash();
+      if (scene.sting) playHorrorSting();
+  }
+
+  /* ---------- Reusable Video Pop-up Player ---------- */
+  function playVideoOverlay(src, onFinished) {
+      el.videoOverlay.style.display = "flex";
+      el.scaryVideo.src = src;
+      el.scaryVideo.currentTime = 0;
+      el.scaryVideo.muted = muted;
+
+      let finished = false;
+      const finishVideo = () => {
+          if (finished) return;
+          finished = true;
+          el.scaryVideo.pause();
+          el.scaryVideo.removeEventListener("ended", finishVideo);
+          el.scaryVideo.removeEventListener("error", finishVideo);
+          el.videoOverlay.removeEventListener("click", finishVideo);
+          el.videoOverlay.style.display = "none";
+          if (onFinished) onFinished();
+      };
+
+      el.scaryVideo.addEventListener("ended", finishVideo);
+      el.scaryVideo.addEventListener("error", finishVideo);
+      el.videoOverlay.addEventListener("click", finishVideo);
+
+      el.scaryVideo.play().catch(() => { finishVideo(); });
+  }
+
+  function renderVideoScene(scene) {
+      setBackground(scene.background);
+      setCharacters([]);
+      el.storyBox.style.display = "none";
+      el.choiceBox.innerHTML = "";
+
+      if (!scene.video) {
+          goToScene(scene.next);
+          return;
+      }
+
+      playVideoOverlay(scene.video, () => {
+          goToScene(scene.next);
+      });
+  }
+
+  function renderEnding(scene) {
+      el.gameScreen.style.display = "none";
+      el.endingScreen.style.display = "flex";
+
+      if (!scene.win) {
+          /* WRONG CHOICE ENDING */
+          isCurrentEndingWin = false;
+          lives--;
+          updateHeartsUI();
+
+          el.likeSection.style.display = "none";
+          el.shareSection.style.display = "none";
+          el.btnPlayAgain.style.display = "inline-block";
+
+          if (lives <= 0) {
+              el.endingBanner.textContent = "OUT OF HEARTS!";
+              el.endingBanner.classList.remove("win");
+              el.endingText.textContent = scene.endingText + " You ran out of hearts! The nightmare resets to midnight...";
+              el.btnPlayAgain.textContent = "RESTART FROM BEGINNING";
+          } else {
+              el.endingBanner.textContent = "WRONG CHOICE!";
+              el.endingBanner.classList.remove("win");
+              el.endingText.textContent = scene.endingText + ` (-1 Heart! ${lives} Heart${lives > 1 ? 's' : ''} Remaining)`;
+              el.btnPlayAgain.textContent = `RETRY QUESTION (${lives} ❤️ LEFT)`;
+          }
+      } else {
+          /* WINNING ENDING WITH "DO YOU LIKE ME?" */
+          isCurrentEndingWin = true;
+          el.endingBanner.textContent = scene.subBanner
+              ? `${scene.banner} — ${scene.subBanner}`
+              : (scene.banner || "YOU SURVIVED");
+          el.endingBanner.classList.add("win");
+          el.endingText.textContent = scene.endingText || "";
+          
+          el.btnPlayAgain.style.display = "none";
+          el.likeSection.style.display = "flex";
+          el.shareSection.style.display = "none";
+          clearSave();
+      }
+  }
+
+  /* ---------- Navigation & Save State ---------- */
+  function goToScene(id) {
+      const scene = scenes[id];
+      if (!scene) {
+          console.error("Missing scene:", id);
+          return;
+      }
+
+      currentSceneId = id;
+
+      if (scene.choices && scene.choices.length > 0) {
+          lastQuestionSceneId = id;
+      }
+
+      saveProgress(id);
+
+      /* Trigger scary video on EVERY wrong answer/ending */
+      if (scene.isEnding) {
+          if (!scene.win) {
+              playVideoOverlay(IMAGES.videos.scaryVideo, () => {
+                  renderEnding(scene);
+              });
+          } else {
+              renderEnding(scene);
+          }
+          return;
+      }
+
+      if (scene.isVideo) {
+          renderVideoScene(scene);
+          return;
+      }
+      renderScene(scene);
+  }
+
+  function saveProgress(id) {
+      try { localStorage.setItem(SAVE_KEY, id); } catch (e) {}
+  }
+  function loadProgress() {
+      try { return localStorage.getItem(SAVE_KEY); } catch (e) { return null; }
+  }
+  function clearSave() {
+      try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+  }
+
+  function showTitle() {
+      el.titleScreen.style.display = "flex";
+      el.gameScreen.style.display = "none";
+      el.endingScreen.style.display = "none";
+      initEmbers();
+
+      const saved = loadProgress();
+      el.btnContinue.style.display = (saved && scenes[saved] && !scenes[saved].isEnding) ? "block" : "none";
+  }
+
+  function beginGame(startId) {
+      el.titleScreen.style.display = "none";
+      el.endingScreen.style.display = "none";
+      el.gameScreen.style.display = "block";
+      updateHeartsUI();
+      startMusic();
+      goToScene(startId);
+  }
+
+  /* ---------- Controls & Handlers ---------- */
+  el.btnNewGame.addEventListener("click", () => {
+      clearSave();
+      resetHearts();
+      beginGame("start");
+  });
+
+  el.btnContinue.addEventListener("click", () => {
+      const saved = loadProgress();
+      beginGame(saved && scenes[saved] ? saved : "start");
+  });
+
+  el.btnPlayAgain.addEventListener("click", () => {
+      if (lives <= 0) {
+          resetHearts();
+          clearSave();
+          showTitle();
+      } else {
+          el.endingScreen.style.display = "none";
+          el.gameScreen.style.display = "block";
+          goToScene(lastQuestionSceneId);
+      }
+  });
+
+  /* "Do you like me?" Options Handlers */
+  el.btnLikeNo.addEventListener("click", () => {
+      playClick();
+      /* Redirects to pilhub on 'No' */
+      window.location.href = "https://pilhub.fun";
+  });
+
+  el.btnLikeYes.addEventListener("click", () => {
+      playClick();
+      /* Display share box on 'Yes' */
+      el.shareSection.style.display = "flex";
+      
+      /* Trigger native share sheet if supported */
+      if (navigator.share) {
+          navigator.share({
+              title: 'Arellano Midnight',
+              text: 'I survived Arellano Midnight! Can you beat it?',
+              url: window.location.href
+          }).catch(() => {});
+      }
+  });
+
+  /* Share Option Handlers */
+  el.btnShareNative.addEventListener("click", () => {
+      playClick();
+      if (navigator.share) {
+          navigator.share({
+              title: 'Arellano Midnight',
+              text: 'I survived Arellano Midnight! Can you beat it?',
+              url: window.location.href
+          }).catch(() => {});
+      } else {
+          window.open('https://www.facebook.com/dialog/send?app_id=291494419107576&link=' + encodeURIComponent(window.location.href) + '&redirect_uri=' + encodeURIComponent(window.location.href), '_blank');
+      }
+  });
+
+  el.btnShareFB.addEventListener("click", () => {
+      playClick();
+      window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(window.location.href), '_blank');
+  });
+
+  el.btnCopyLink.addEventListener("click", () => {
+      playClick();
+      navigator.clipboard.writeText(window.location.href).then(() => {
+          alert("Link copied to clipboard!");
+      }).catch(() => {});
+  });
+
+  el.btnRestart.addEventListener("click", () => {
+      if (confirm("Restart the story from the beginning?")) {
+          clearSave();
+          resetHearts();
+          beginGame("start");
+      }
+  });
+
+  /* Resume Web Audio on first user gesture */
+  document.addEventListener("click", () => {
+      if (audioCtx && audioCtx.state === "suspended") {
+          audioCtx.resume();
+      }
+  }, { once: true });
+
+  /* Boot Engine */
+  showTitle();
+  </script>
+</body>
+</html>
